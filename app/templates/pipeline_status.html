@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Pipeline Status - DevPulse{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Data Pipeline Health</h1>
+        <span class="badge bg-info text-dark">System: Active</span>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            Execution History
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date & Time (UTC)</th>
+                        <th>Status</th>
+                        <th>Jobs Processed</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.run_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if log.status == 'Success' %}
+                                <span class="badge bg-success">Success</span>
+                            {% else %}
+                                <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.jobs_found }}</td>
+                        <td><small class="text-muted">{{ log.details }}</small></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No pipeline logs found. Run the script!</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <h4>How it works</h4>
+        <p class="text-muted">
+            The DevPulse Pipeline runs periodically to fetch data from Adzuna API. 
+            It cycles through categories: <b>Software Engineer, Data Scientist, Cyber Security, IT Support</b>.
+            It cleans the HTML, extracts key skills using Regex, and updates the database.
+        </p>
+    </div>
+</div>
+{% endblock %}
