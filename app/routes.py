@@ -4,10 +4,8 @@ from app import db
 from sqlalchemy import func
 import datetime
 
-# ETL Imports
-from etl.extract import extract_jobs
-from etl.transform import transform_jobs
-from etl.load import load_jobs_to_db
+# NOTE: We removed the ETL imports from here to prevent Circular Errors.
+# They are now inside the 'trigger_pipeline' function below.
 
 # Define the Blueprint
 main_bp = Blueprint('main', __name__)
@@ -56,12 +54,19 @@ def pipeline_status():
     logs = PipelineLog.query.order_by(PipelineLog.run_date.desc()).limit(10).all()
     return render_template('pipeline_status.html', logs=logs)
 
-# --- NEW ROUTE FOR REMOTE TRIGGER ---
+# --- SECRET ROUTE FOR REMOTE TRIGGER ---
 @main_bp.route('/admin/run-pipeline')
 def trigger_pipeline():
     """
     A secret route to force the ETL pipeline to run from the browser.
     """
+    
+    # --- LAZY IMPORTS (The Fix) ---
+    # We import these HERE so the app can start without crashing.
+    from etl.extract import extract_jobs
+    from etl.transform import transform_jobs
+    from etl.load import load_jobs_to_db
+
     # Categories to search
     categories = ["Software Engineer", "Data Scientist", "IT Support"]
     
@@ -69,7 +74,7 @@ def trigger_pipeline():
     total_count = 0
 
     try:
-        # Loop through categories just like run_pipeline.py
+        # Loop through categories
         for cat in categories:
             # 1. Extract
             raw_data = extract_jobs(query=cat, location="South Africa")
